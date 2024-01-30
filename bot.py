@@ -14,7 +14,7 @@ import threading
 import sys
 
 load_dotenv()
-sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=6)
+sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=4)
 
 class BotData(object):
     pass
@@ -39,9 +39,18 @@ class Card:
     def __init__(self, id, character):
         self.id = sqids.encode(id)
         self.character = character
+
 class Player:
-    def __init__(self, ):
-        pass
+    def __init__(self, user_id):
+        self.user_id = user_id
+        self.curreny = 0
+        self.max_rolls = 20
+        self.max_grabs = 1
+        self.last_roll_time = 0
+        self.last_grab_time = 0
+        self.cards = []
+        self.upgrades = []
+        self.inventory = []
     
 def load_data():
     f = open("data.json")
@@ -68,20 +77,22 @@ bot = commands.Bot(command_prefix="!",intents=intents)
 async def on_ready():
     print(f"We have logged in as {bot.user}")
     print(bot.user.id)
+
 @bot.command(aliases=["r"])
 async def register(ctx):
     sender_id = ctx.author.id
-    is_registered = os.path.exists("Players/"+sender_id)
+    is_registered = os.path.exists("Players/"+str(sender_id)+".json")
     if is_registered:
-        print("You are already registered!")
+        await ctx.channel.send("You are already registered!")
     else:
         f = open("Players/"+str(sender_id), "w")
-        f.write()
+        f.write(jsonpickle.encode(Player(sender_id)))
+        f.close()
+        await ctx.channel.send("You have registered successfully!")
 
 @bot.command(aliases=["testdrop"])
 async def drop(ctx):
     await generate_card_drop().sendAsMessage(ctx.channel)
-        
 
 
 #bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
