@@ -1,5 +1,4 @@
 from asyncio.windows_events import NULL
-import asyncio
 import random
 from tracemalloc import start
 import jsonpickle
@@ -10,7 +9,6 @@ import os
 from sqids import Sqids
 from dotenv import load_dotenv
 import base64
-import threading
 import sys
 
 load_dotenv()
