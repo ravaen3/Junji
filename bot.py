@@ -7,9 +7,11 @@ from discord.ext import commands
 import time
 import os
 from sqids import Sqids
+from dotenv import load_dotenv
+import base64
 
 
-
+load_dotenv()
 sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=6)
 
 class BotData(object):
@@ -52,7 +54,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!",intents=intents)
 @bot.event
 async def on_ready():
-    print("We have logged in as {bot.user}")
+    print(f"We have logged in as {bot.user}")
 @bot.command(aliases=["r"])
 async def register(ctx):
     sender_id = ctx.author.id
@@ -63,6 +65,7 @@ async def register(ctx):
         f = open("Players/"+str(sender_id), "w")
         f.write()
         
-bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
+bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))
+#bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
 load_data()
 print(generate_card_drop())
