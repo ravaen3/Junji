@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+import asyncio
 import random
 from tracemalloc import start
 import jsonpickle
@@ -9,6 +10,7 @@ import os
 from sqids import Sqids
 from dotenv import load_dotenv
 import base64
+import threading
 import sys
 
 load_dotenv()
@@ -26,7 +28,8 @@ class Character:
         print(f"series={self.series}")
         print(f"img_url={self.img_url}")
     async def sendAsMessage(self, channel):
-        mstring = f"{self.name} from {self.series} has dropped."
+        name = self.name.replace("_"," ")
+        mstring = f"{name} from {self.series} has dropped."
         embedVar = discord.Embed(title=self.name, description=self.series, color=0x00ff00, url=self.img_url)
         embedVar.set_image(url=self.img_url)
         button = discord.ui.Button(style=discord.ButtonStyle.danger, label="test")
@@ -47,7 +50,7 @@ class Player:
         self.curreny = 0
         self.rolls = 20
         self.grabs = 1
-        self.max_rolls = 20
+        self.max_rolls = 10
         self.max_grabs = 1
         self.last_roll_time = 0
         self.last_grab_time = 0
@@ -96,11 +99,27 @@ async def register(ctx):
 @bot.command(aliases=["testdrop"])
 async def drop(ctx):
     sender_id = ctx.author.id
-    f = open("Players/"+str(sender_id)+".json", "r")
-    player = jsonpickle.decode(f.read())
-    f.close()
-    player.
-    await generate_card_drop().sendAsMessage(ctx.channel)
+    is_registered = os.path.exists("Players/"+str(sender_id)+".json")
+    if is_registered:
+        f = open("Players/"+str(sender_id)+".json", "r")
+        player = jsonpickle.decode(f.read())
+        f.close()
+        since_last_roll = (time.time()//1)-player.last_roll_time
+        player.rolls += since_last_roll//300
+        if player.rolls>player.max_rolls:
+            player.rolls=player.max_rolls
+        if player.rolls>0:
+            await generate_card_drop().sendAsMessage(ctx.channel)
+            player.rolls-=1
+            player.last_roll_time = time.time() - (since_last_roll % 300)
+        else:
+            await ctx.channel.send("You have no drops left! Next drop available in " +str(round(300-since_last_roll,1))+" seconds!")
+        print(player.rolls)
+        f = open("Players/"+str(sender_id)+".json", "w")
+        f.write(jsonpickle.encode(player))
+        f.close()
+    else:
+        await ctx.channel.send("You are not registered! Register with !register")
 
 
 #bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
