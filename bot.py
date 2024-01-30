@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+import asyncio
 import random
 from tracemalloc import start
 import jsonpickle
@@ -26,9 +27,11 @@ class Character:
         print(f"name={self.name}")
         print(f"series={self.series}")
         print(f"img_url={self.img_url}")
-    def sendAsMessage(self, channel):
+    async def sendAsMessage(self, channel):
         mstring = f"{self.name} from {self.series} has dropped."
-        channel.send(mstring, embeds=discord.Embed.from_dict({ "url" : self.img_url}))
+        embedVar = discord.Embed(title=self.name, description=self.series, color=0x00ff00, url=self.img_url)
+        embedVar.set_image(url=self.img_url)
+        await channel.send(content=mstring, embed=embedVar) #, embeds=discord.Embed.from_dict({ "url" : self.img_url})
         
 
 
@@ -46,7 +49,7 @@ def load_data():
     f.close()
 
 def load_characters():
-    f = open("Characters\data.json", "r")
+    f = open("Characters\\data.json", "r")
     data = jsonpickle.decode(f.read())
     f.close()
     return data
@@ -74,11 +77,14 @@ async def register(ctx):
     else:
         f = open("Players/"+str(sender_id), "w")
         f.write()
+
+@bot.command(aliases=["testdrop"])
+async def drop(ctx):
+    await generate_card_drop().sendAsMessage(ctx.channel)
         
 
 
 #bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
-print("testtetsestestestestse")
 generate_card_drop().print()
 
 if(len(sys.argv)>=2 and sys.argv[1]=='run'):
