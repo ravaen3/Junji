@@ -9,7 +9,8 @@ import os
 from sqids import Sqids
 from dotenv import load_dotenv
 import base64
-
+import threading
+import sys
 
 load_dotenv()
 sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=6)
@@ -21,6 +22,15 @@ class Character:
         self.name = name
         self.series = series
         self.img_url = img_url
+    def print(self):
+        print(f"name={self.name}")
+        print(f"series={self.series}")
+        print(f"img_url={self.img_url}")
+    def sendAsMessage(self, channel):
+        mstring = f"{self.name} from {self.series} has dropped."
+        channel.send(mstring, embeds=discord.Embed.from_dict({ "url" : self.img_url}))
+        
+
 
 class Card:
     def __init__(self, id, character):
@@ -34,7 +44,6 @@ def load_data():
     f = open("data.json")
     botdata = jsonpickle.decode(f.read())
     f.close()
-    print(botdata.current_id)
 
 def load_characters():
     f = open("Characters\data.json", "r")
@@ -55,6 +64,7 @@ bot = commands.Bot(command_prefix="!",intents=intents)
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
+    print(bot.user.id)
 @bot.command(aliases=["r"])
 async def register(ctx):
     sender_id = ctx.author.id
@@ -65,7 +75,15 @@ async def register(ctx):
         f = open("Players/"+str(sender_id), "w")
         f.write()
         
-bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))
+
+
 #bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
-load_data()
-print(generate_card_drop())
+print("testtetsestestestestse")
+generate_card_drop().print()
+
+if(len(sys.argv)>=2 and sys.argv[1]=='run'):
+    bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))
+
+#botthread = threading.Thread(target=bot.run, args=(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8") ,))
+#botthread.start()
+#botthread.join()
