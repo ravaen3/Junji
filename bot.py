@@ -45,6 +45,8 @@ class Player:
     def __init__(self, user_id):
         self.user_id = user_id
         self.curreny = 0
+        self.rolls = 20
+        self.grabs = 1
         self.max_rolls = 20
         self.max_grabs = 1
         self.last_roll_time = 0
@@ -86,13 +88,18 @@ async def register(ctx):
     if is_registered:
         await ctx.channel.send("You are already registered!")
     else:
-        f = open("Players/"+str(sender_id), "w")
+        f = open("Players/"+str(sender_id)+".json", "w")
         f.write(jsonpickle.encode(Player(sender_id)))
         f.close()
         await ctx.channel.send("You have registered successfully!")
 
 @bot.command(aliases=["testdrop"])
 async def drop(ctx):
+    sender_id = ctx.author.id
+    f = open("Players/"+str(sender_id)+".json", "r")
+    player = jsonpickle.decode(f.read())
+    f.close()
+    player.
     await generate_card_drop().sendAsMessage(ctx.channel)
 
 
