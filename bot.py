@@ -29,7 +29,10 @@ class Character:
         mstring = f"{self.name} from {self.series} has dropped."
         embedVar = discord.Embed(title=self.name, description=self.series, color=0x00ff00, url=self.img_url)
         embedVar.set_image(url=self.img_url)
-        await channel.send(content=mstring, embed=embedVar) #, embeds=discord.Embed.from_dict({ "url" : self.img_url})
+        button = discord.ui.Button(style=discord.ButtonStyle.danger, label="test")
+        view1 = discord.ui.View(timeout= 60.0)
+        view1.add_item(button)
+        await channel.send(content=mstring, embed=embedVar, view=view1)
         
 
 
