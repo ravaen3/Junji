@@ -43,6 +43,12 @@ def getBitNumber(id):
         id -= 1
     return aux
 
+def base62(int, alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"):
+    if int<62:
+        return alphabet[int]
+    else:
+        return base62(int//62, alphabet) + alphabet[int % 62]
+
 for i in range(0, 100):
     aux = getCharId(i)
     s = getCharString(aux)
@@ -50,3 +56,5 @@ for i in range(0, 100):
 
 
     print(i, aux, reverseCharId(aux), s, sr, reverseCharId(sr))
+    print("Ravaen:", base62(i), ", Daisey:", s)
+    print()
