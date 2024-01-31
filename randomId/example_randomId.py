@@ -7,6 +7,6 @@ if(inputVar=="a"):
 elif inputVar=="b":
     number = int(input("type a number"))
     aux = randomIdPrototype.getCharString(randomIdPrototype.getCharId(number))
-    print(number, "maps to", aux)
+    print(aux, "maps to", randomIdPrototype.reverseCharId(randomIdPrototype.reverseCharString(aux)))
 else: 
     print("type properly idiot")
