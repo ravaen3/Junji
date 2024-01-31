@@ -5,7 +5,7 @@
 def getCharId(id):
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     aux = 0
-    size = 17 #size is the floor(2log(len(alphabet)))
+    size = 17 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
     for i in range(0,size):
         aux *=2
         aux = aux + ( 1 if getBitNumber(13*i % size) & id > 0 else 0)
@@ -14,7 +14,7 @@ def getCharId(id):
     return (alphabet[aux & (getBitNumber(6)-1)] + alphabet[aux>>5 & (getBitNumber(6)-1)] + alphabet[aux >>10 & (getBitNumber(6)-1)])
 
 def reverseCharId(id):
-    size = 17 #size is the floor(2log(len(alphabet)))
+    size = 17 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
     aux = 0
     idcopy = id
     for i in range(0, size):
