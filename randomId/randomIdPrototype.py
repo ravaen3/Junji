@@ -5,32 +5,49 @@
 def getCharId(id):
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     aux = 0
-    size = 17 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
+    maxbits = 32
+    size = 18 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
+    idcopy = id
     for i in range(0,size):
         aux *=2
-        aux = aux + ( 1 if getBitNumber(13*i % size) & id > 0 else 0)
-
+        aux = aux + ( 1 if getBitNumber(13*i % size) & idcopy > 0 else 0)
+    for i in range(size,maxbits):
+        aux += getBitNumber(i) & idcopy
     return aux
-    return (alphabet[aux & (getBitNumber(6)-1)] + alphabet[aux>>5 & (getBitNumber(6)-1)] + alphabet[aux >>10 & (getBitNumber(6)-1)])
 
 def reverseCharId(id):
-    size = 17 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
+    size = 18 #size is the floor( 2log( len(alphabet) ** len(code) ) ) 
     aux = 0
     idcopy = id
+    maxbits = 32
     for i in range(0, size):
         if(idcopy & 1 > 0):
             aux = aux + getBitNumber(13*(size-i-1) % size)
         idcopy = idcopy >> 1
+    for j in range(size, maxbits):
+        aux += id & (getBitNumber(j))
     return aux
 
 
 def getCharString(id):
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-    return (alphabet[id % 62] + alphabet[id//62  % 62] + alphabet[id//62//62  % 62])
+    idcopy = id
+    res = ""
+    for i in range(0,3):
+        res += alphabet[idcopy % 62]
+        idcopy = idcopy//62
+    
+    while(idcopy>0):
+        res += alphabet[idcopy % 62]
+        idcopy = idcopy//62
+    return res
 
 def reverseCharString(s):
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    res = 0
+    for i in range(len(s)):
+        res += alphabet.find(s[i]) * 62**i
+    return res
     return alphabet.find(s[0]) + alphabet.find(s[1]) * 62 + alphabet.find(s[2])*62*62 
 
 def getBitNumber(id):
@@ -49,12 +66,5 @@ def base62(int, alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01
     else:
         return base62(int//62, alphabet) + alphabet[int % 62]
 
-for i in range(0, 100):
-    aux = getCharId(i)
-    s = getCharString(aux)
-    sr = reverseCharString(s)
 
 
-    print(i, aux, reverseCharId(aux), s, sr, reverseCharId(sr))
-    print("Ravaen:", base62(i), ", Daisey:", s)
-    print()
