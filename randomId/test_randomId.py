@@ -7,7 +7,7 @@ def base62(int, alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01
     else:
         return base62(int//62, alphabet) + alphabet[int % 62]
 
-for i in range(1000, 1100):
+for i in range(10000, 11000):
     aux = randomIdPrototype.getCharId(i)
     s = randomIdPrototype.getCharString(aux)
     sr = randomIdPrototype.reverseCharString(s)

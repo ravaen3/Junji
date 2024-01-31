@@ -7,7 +7,7 @@ import jsonpickle
 import random
 from sqids import Sqids
 from bs4 import BeautifulSoup
-character_amount = 5000
+character_amount = 100
 series_whitelist = [] #"https://myanimelist.net/anime/8234/Muumin"
 series_names = ["One Piece", "Dragon Ball", "Shingeki no Kyojin", "Sousou no Frieren"]
 amount_scraped = 0
@@ -15,7 +15,7 @@ class Character:
     def __init__(self, name, series, img_url ="test"):
         self.name = name
         self.series = series
-        self.img_urls = [img_url]
+        self.img_urls = img_url
 
 characters = {}
 for i in range(0,character_amount//50):
@@ -27,15 +27,13 @@ for i in range(0,character_amount//50):
         html = BeautifulSoup(requests.get(URL).text)
     for entry in html.find_all("tr", attrs={"class":"ranking-list"}):
         name = re.findall("(?<=\d\/)(.*?)(?=\")",str(entry.find("a", attrs={"class":"fs14 fw-b"})))[0]
-        series = ""
+        series = []
         series_arr = entry.find("td", attrs={"class":"animeography"}).find_all("a")
         series_arr.extend(entry.find("td", attrs={"class":"mangaography"}).find_all("a"))
         for anime in series_arr:
-            if anime.get_text() in series_names:
-                series = anime.get_text()
-                break
-            if len(anime.get_text())<len(series) or series == "":
-                series = anime.get_text() 
+            anime = str(anime.get_text())
+            if anime not in series:
+                series.append(anime)
         image_id = re.findall("(?<=rs\/)(.*?)\?", str(entry.find("img", attrs={"class":"lazyload"})))
         image_url = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
         if len(image_id) != 0:
@@ -43,8 +41,8 @@ for i in range(0,character_amount//50):
        
         character = Character(
             re.findall("(?<=\d\/)(.*?)(?=\")",str(entry.find("a", attrs={"class":"fs14 fw-b"})))[0],
-            str(series),
-            image_url
+            series,
+            [image_url]
         )
         characters[name]=character
         print(amount_scraped)

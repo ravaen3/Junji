@@ -43,7 +43,7 @@ class Claim(discord.ui.View):
                 await interaction.response.send_message("This character has already been claimed", ephemeral=True)
             elif player.grabs>0:
                 self.claimed = True
-                await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character_name)
+                await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character_name)               
                 player.grabs-=1
                 player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
             else:
@@ -90,29 +90,6 @@ class Player:
         self.upgrades = []
         self.inventory = []
 
-def base62(x, alphabet = BASE_ALPHABET, i=0, min_length = 3):
-    if x < 62 and i == min_length-1:
-        return alphabet[x%62]
-    else:
-        return base62(x // 62, alphabet, i+1) + alphabet[x % 62]
-
-def base10(x, alphabet = BASE_ALPHABET):
-    base = len(alphabet)
-    y = 0
-    for char in x:
-        y = y * base + alphabet.index(char)
-    return y
-
-def shuffle(string, seed = 1):
-    random.seed(seed)
-    chars = list(string)
-    random.shuffle(chars)
-    return "".join(chars)
-
-def generate_card_hexid(character_id,card_id):
-    character_hexid = base62(character_id)
-    card_hexid = character_hexid+str(base62(card_id,shuffle(BASE_ALPHABET, character_id)))
-    return card_hexid
 def load_data():
     f = open("data.json")
     botdata = jsonpickle.decode(f.read())
