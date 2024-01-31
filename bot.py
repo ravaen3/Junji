@@ -15,7 +15,7 @@ import sys
 
 load_dotenv()
 sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=4)
-
+BASE_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NOT_REGISTERED_MESSAGE = "You can't perform this action because you are not yet registered. Register with !register"
 TIME_PER_ROLL = 300
 TIME_PER_GRAB = 1800
@@ -89,7 +89,30 @@ class Player:
         self.cards = []
         self.upgrades = []
         self.inventory = []
-    
+
+def base62(x, alphabet = BASE_ALPHABET, i=0, min_length = 3):
+    if x < 62 and i == min_length-1:
+        return alphabet[x%62]
+    else:
+        return base62(x // 62, alphabet, i+1) + alphabet[x % 62]
+
+def base10(x, alphabet = BASE_ALPHABET):
+    base = len(alphabet)
+    y = 0
+    for char in x:
+        y = y * base + alphabet.index(char)
+    return y
+
+def shuffle(string, seed = 1):
+    random.seed(seed)
+    chars = list(string)
+    random.shuffle(chars)
+    return "".join(chars)
+
+def generate_card_hexid(character_id,card_id):
+    character_hexid = base62(character_id)
+    card_hexid = character_hexid+str(base62(card_id,shuffle(BASE_ALPHABET, character_id)))
+    return card_hexid
 def load_data():
     f = open("data.json")
     botdata = jsonpickle.decode(f.read())
