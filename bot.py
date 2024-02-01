@@ -1,6 +1,7 @@
 from asyncio.windows_events import NULL
 import asyncio
 import random
+import idgen
 from tracemalloc import start
 from typing import Optional
 import jsonpickle
@@ -13,21 +14,23 @@ from dotenv import load_dotenv
 import base64
 import sys
 
+
+idGen = idgen.RandomId()
 load_dotenv()
 sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=4)
 BASE_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NOT_REGISTERED_MESSAGE = "You can't perform this action because you are not yet registered. Register with !register"
 TIME_PER_ROLL = 300
-TIME_PER_GRAB = 1800
+TIME_PER_GRAB = 1200
 
 class BotData(object):
     pass
 class Claim(discord.ui.View):
-    def __init__(self, name):
+    def __init__(self, character):
         super().__init__()
         self.value = None
         self.claimed = False
-        self.character_name = name
+        self.character = character
     @discord.ui.button(label='Claim', style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         is_registered = os.path.exists("Players/"+str(interaction.user.id)+".json")
@@ -41,9 +44,20 @@ class Claim(discord.ui.View):
                 player.grabs=player.max_grabs
             if self.claimed:
                 await interaction.response.send_message("This character has already been claimed", ephemeral=True)
-            elif player.grabs>0:
+            elif player.grabs>0:             
                 self.claimed = True
-                await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character_name)               
+                f = open("Cards/data.json", "r+")
+                cards = jsonpickle.decode(f.read())
+                for i in range(1,10000):
+                    card_id = idGen.getFullString(self.character.id, i)
+                    if card_id not in cards:
+                        cards[card_id] = Card(card_id, interaction.user.id, self.character)
+                        await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character.name + "Card ID: " + card_id)
+                        break
+                f.seek(0)
+                f.write(jsonpickle.encode(cards))
+                f.close()
+                player.cards.append(card_id)
                 player.grabs-=1
                 player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
             else:
@@ -55,27 +69,30 @@ class Claim(discord.ui.View):
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
 
 class Character:
-    def __init__(self, name, series, img_url ="test"):
+    def __init__(self, name, id, series, img_urls ="test"):
         self.name = name
+        self.id = id
         self.series = series
-        self.img_url = img_url
+        self.img_urls = img_urls
     def print(self):
         print(f"name={self.name}")
-        print(f"series={self.series}")
-        print(f"img_url={self.img_url}")
+        print(f"series={self.series[0]}")
+        print(f"img_urls={self.img_urls[0]}")
     async def sendAsMessage(self, channel):
+        self.print()
         name = self.name.replace("_"," ")
-        mstring = f"{name} from {self.series} has dropped."
-        embedVar = discord.Embed(title=self.name, description=self.series, color=0x00ff00, url=self.img_url)
-        embedVar.set_image(url=self.img_url)
-        view1 = Claim(name)
+        mstring = f"{name} from {self.series[0]} has dropped."
+        embedVar = discord.Embed(title=self.name, description=self.series[0], color=0x00ff00, url=self.img_urls[0])
+        embedVar.set_image(url=self.img_urls[0])
+        view1 = Claim(self)
         await channel.send(content=mstring, embed=embedVar, view=view1)
         
 class Card:
-    def __init__(self, id, character):
-        self.id = sqids.encode(id)
+    def __init__(self, id, owner, character):
+        self.id = id
         self.character = character
-
+        self.img = 0
+        self.owner = owner
 class Player:
     def __init__(self, user_id):
         self.user_id = user_id
@@ -154,7 +171,6 @@ async def drop(ctx):
 
 
 #bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
-generate_card_drop().print()
 
 if(len(sys.argv)>=2 and sys.argv[1]=='run'):
     bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))

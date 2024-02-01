@@ -1,1 +1,1 @@
-{"py/object": "__main__.Player", "user_id": 140576873598943232, "curreny": 0, "rolls": 0.0, "grabs": 0.0, "max_rolls": 10, "max_grabs": 2, "last_roll_time": 1706660403.42084, "last_grab_time": 1706660402.1081753, "cards": [], "upgrades": [], "inventory": []}
+{"py/object": "__main__.Player", "user_id": 140576873598943232, "curreny": 0, "rolls": 1.0, "grabs": 1, "max_rolls": 10, "max_grabs": 2, "last_roll_time": 1706743525.3874183, "last_grab_time": 1706743206.3156705, "cards": ["iYe-bG"], "upgrades": [], "inventory": []}
