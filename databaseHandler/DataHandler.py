@@ -1,5 +1,21 @@
 import jsonpickle
+import os
 
+class Player:
+    def __init__(self, user_id):
+        self.user_id = user_id
+        self.curreny = 0
+        self.rolls = 20
+        self.grabs = 1
+        self.max_rolls = 10
+        self.max_grabs = 2
+        self.last_roll_time = 0
+        self.last_grab_time = 0
+        self.cards = []
+        self.upgrades = []
+        self.inventory = []
+
+    
 
 class DataHandler():
 
@@ -16,11 +32,11 @@ class DataHandler():
         return self.characters[charid]
     
     def register(self, playerid):
-        if(is_registered(playerid)):
+        if(self.is_registered(playerid)):
             raise Exception("player is already registered")
         else:
-            f = open(self, self.__get_player_path(playerid))
-            f.write(jsonpickle.encode(Player(sender_id)))
+            f = open(self.__get_player_path(playerid), "w")
+            f.write(jsonpickle.encode(Player(playerid)))
             f.close()
     
     def __get_player_path(self, playerid):
@@ -38,9 +54,8 @@ class DataHandler():
             player = jsonpickle.decode(f.read())
             f.close()
             return player
-
         else:
-            raise(Exception("player is not registered"))
+            raise(Exception(f"player {playerid} is not registered"))
 
 
 

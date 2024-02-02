@@ -3,8 +3,11 @@ import DataHandler
 
 
 
-dh = DataHandler.DataHandler("/..")
+dh = DataHandler.DataHandler(".")
 
-
-for i in range(0, 10):
+dh.register(0)
+for i in range(0, 3):
+    
     dh.getCharacter(i)
+    print(dh.getPlayer(i))
+    
