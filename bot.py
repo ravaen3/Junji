@@ -13,10 +13,10 @@ from dotenv import load_dotenv
 import base64
 import sys
 import DataTypes
-import databaseHandler
+import databaseHandler.DataHandler
 
 
-dh = databaseHandler.DataHandler(".")
+dh = databaseHandler.DataHandler.DataHandler(".")
 
 idGen = idgen.RandomId()
 load_dotenv()

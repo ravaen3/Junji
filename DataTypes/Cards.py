@@ -25,6 +25,7 @@ class CardList:
     def getCard(self):
         card = self.available_ids.pop()
         self.available_ids.append(self.max_id)
+        self.cards.append(card)
         self.max_id+=1
         return card
     def burnCard(self, card_id):
