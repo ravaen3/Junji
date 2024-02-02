@@ -13,19 +13,14 @@ from sqids import Sqids
 from dotenv import load_dotenv
 import base64
 import sys
-<<<<<<< Updated upstream
-import data
-=======
 import DataTypes
 import databaseHandler
 
 
 dh = databaseHandler.DataHandler(".")
->>>>>>> Stashed changes
 
 idGen = idgen.RandomId()
 load_dotenv()
-sqids = Sqids(alphabet="kEjqW4T673ePsJNoACFwUVy1Ofabmz5nxGDtcHZQ2lpgrSLdhM0uR8iKIvBX9Y", min_length=4)
 BASE_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NOT_REGISTERED_MESSAGE = "You can't perform this action because you are not yet registered. Register with !register"
 TIME_PER_ROLL = 300
@@ -42,42 +37,10 @@ class Claim(discord.ui.View):
         self.character = character
     @discord.ui.button(label='Claim', style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
-        is_registered = os.path.exists("Players/"+str(interaction.user.id)+".json")
-        if is_registered:
-            f = open("Players/"+str(interaction.user.id)+".json", "r")
-            player = jsonpickle.decode(f.read())
-            f.close()
-            since_last_grab = (time.time()//1)-player.last_grab_time
-            player.grabs += since_last_grab//TIME_PER_GRAB
-            if player.grabs>player.max_grabs:
-                player.grabs=player.max_grabs
-            if self.claimed:
-                await interaction.response.send_message("This character has already been claimed", ephemeral=True)
-            elif player.grabs>0:             
-                self.claimed = True
-                f = open("Cards/data.json", "r+")
-                cards = jsonpickle.decode(f.read())
-                for i in range(1,10000):
-                    card_id = idGen.getFullString(self.character.id, i)
-                    if card_id not in cards:
-                        cards[card_id] = CardListing(card_id, interaction.user.id)
-                        await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character.name + "Card ID: " + card_id)
-                        break
-                f.seek(0)
-                f.write(jsonpickle.encode(cards))
-                f.close()
-                player.cards.append(Card(card_id,self.character))
-                player.grabs-=1
-                player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
-            else:
-                await interaction.response.send_message("You have no grabs left! Next grab available in " +str(round(TIME_PER_GRAB-since_last_grab,1))+" seconds!", ephemeral=True)
-            f = open("Players/"+str(interaction.user.id)+".json", "w")
-            f.write(jsonpickle.encode(player))
-            f.close()
-        else:
+        try:
+            player = dh.getPlayer(interaction.user.id)
+        except Exception as ex:
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
-<<<<<<< Updated upstream
-=======
             return
         since_last_grab = (time.time()//1)-player.last_grab_time
         player.grabs += since_last_grab//TIME_PER_GRAB
@@ -91,51 +54,10 @@ class Claim(discord.ui.View):
             card_id = card_list.getCard()
             player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
             dh.rewriteCards(card_list, self.character.id)
-            #player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
             player.grabs-=1
             player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
             await interaction.response.send_message(f"{interaction.user.mention} claimed {self.character.name} Card ID: {card_id}")
         dh.modifyPlayer(player)
-       
-        # ############
-        # is_registered = os.path.exists("Players/"+str(interaction.user.id)+".json")
-        
-        # if is_registered:
-        #     f = open("Players/"+str(interaction.user.id)+".json", "r")
-        #     player = jsonpickle.decode(f.read())
-        #     f.close()
-        #     since_last_grab = (time.time()//1)-player.last_grab_time
-        #     player.grabs += since_last_grab//TIME_PER_GRAB
-        #     if player.grabs>player.max_grabs:
-        #         player.grabs=player.max_grabs
-        #     if self.claimed:
-        #         await interaction.response.send_message("This character has already been claimed", ephemeral=True)
-        #     elif player.grabs>0:             
-        #         self.claimed = True
-        #         f = open("Cards/data.json", "r+")
-        #         cards = jsonpickle.decode(f.read())
-        #         for i in range(1,10000):
-        #             card_id = idGen.getFullString(self.character.id, i)
-        #             if card_id not in cards:
-        #                 cards[card_id] = CardListing(card_id, interaction.user.id)
-        #                 await interaction.response.send_message(interaction.user.mention+ " claimed " + self.character.name + "Card ID: " + card_id)
-        #                 break
-        #         f.seek(0)
-        #         f.write(jsonpickle.encode(cards))
-        #         f.close()
-        #         player.cards.append(Card(card_id,self.character))
-        #         player.grabs-=1
-        #         player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
-        #     else:
-        #         await interaction.response.send_message("You have no grabs left! Next grab available in " +str(round(TIME_PER_GRAB-since_last_grab,1))+" seconds!", ephemeral=True)
-            
-        #     f = open("Players/"+str(interaction.user.id)+".json", "w")
-        #     f.write(jsonpickle.encode(player))
-        #     f.close()
-        #     ########
-        # else:
-        #     await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
->>>>>>> Stashed changes
 
 class CardListing:
     def __init__(self, id, owner_id):
@@ -172,10 +94,6 @@ async def generate_card_drop(channel):
     await channel.send(content=mstring, embed=embedVar, view=view1)
 def load_card():
     pass
-<<<<<<< Updated upstream
-characters = load_characters()
-=======
->>>>>>> Stashed changes
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -191,12 +109,6 @@ async def collection(ctx, target = "user"):
         print(target)
     is_registered = os.path.exists("Players/"+str(target)+".json")
     if is_registered:
-<<<<<<< Updated upstream
-        f = open("Players/"+str(target)+".json")
-        player = jsonpickle.decode(f.read())
-        f.close()
-        await player.collection(ctx.channel)
-=======
         player = dh.getPlayer(str(target))
         user = await bot.fetch_user(player.user_id)
         embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
@@ -204,7 +116,6 @@ async def collection(ctx, target = "user"):
 
             embedVar.add_field(name="",value=f"**{characters[card.character_id].name}**-*{card.id}*", inline= False)
         await ctx.channel.send(content="",embed=embedVar)    
->>>>>>> Stashed changes
 
     else:
         await ctx.channel.send("That user is not yet registered!")
@@ -213,26 +124,18 @@ async def collection(ctx, target = "user"):
 @bot.command(aliases=["r"])
 async def register(ctx):
     sender_id = ctx.author.id
-    is_registered = os.path.exists("Players/"+str(sender_id)+".json")
-    if is_registered:
-        await ctx.channel.send("You are already registered!")
-<<<<<<< Updated upstream
-    else:
-        f = open("Players/"+str(sender_id)+".json", "w")
-        f.write(jsonpickle.encode(Player(sender_id)))
-        f.close()
+
+    try: 
+        dh.register(sender_id)
         await ctx.channel.send("You have registered successfully!")
-=======
->>>>>>> Stashed changes
+    except:
+        await ctx.channel.send("You are already registered!")
 
 @bot.command(aliases=["testdrop"])
 async def drop(ctx):
     sender_id = ctx.author.id
-    is_registered = os.path.exists("Players/"+str(sender_id)+".json")
-    if is_registered:
-        f = open("Players/"+str(sender_id)+".json", "r")
-        player = jsonpickle.decode(f.read())
-        f.close()
+    if(dh.is_registered(sender_id)):
+        player = dh.getPlayer(sender_id)
         since_last_roll = (time.time()//1)-player.last_roll_time
         player.rolls += since_last_roll//TIME_PER_ROLL
         if player.rolls>player.max_rolls:
@@ -243,26 +146,9 @@ async def drop(ctx):
             player.last_roll_time = time.time() - (since_last_roll % TIME_PER_ROLL)
         else:
             await ctx.channel.send("You have no drops left! Next drop available in " +str(round(TIME_PER_ROLL-since_last_roll,1))+" seconds!")
-<<<<<<< Updated upstream
-        print(player.rolls)
-        f = open("Players/"+str(sender_id)+".json", "w")
-        f.write(jsonpickle.encode(player))
-        f.close()
-    else:
-        await ctx.channel.send(NOT_REGISTERED_MESSAGE)
-
-
-#bot.run('MTAwNjkwODA3MjQ5NDYzNzA3Ng.G3D-72.cJBtxEnMHni9K8LkgoKtHO0BkzSMBDMTJIlmZQ')
-
-=======
         dh.modifyPlayer(player)
     else: 
         await ctx.channel.send(NOT_REGISTERED_MESSAGE)
 
->>>>>>> Stashed changes
 if(len(sys.argv)>=2 and sys.argv[1]=='run'):
     bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))
-
-#botthread = threading.Thread(target=bot.run, args=(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8") ,))
-#botthread.start()
-#botthread.join()
