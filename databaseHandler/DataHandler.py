@@ -1,6 +1,19 @@
 import jsonpickle
 import os
-import DataTypes
+
+class Player:
+    def __init__(self, user_id):
+        self.user_id = user_id
+        self.curreny = 0
+        self.rolls = 20
+        self.grabs = 1
+        self.max_rolls = 10
+        self.max_grabs = 2
+        self.last_roll_time = 0
+        self.last_grab_time = 0
+        self.cards = []
+        self.upgrades = []
+        self.inventory = []
 
     
 
@@ -12,36 +25,8 @@ class DataHandler():
         self.characters = jsonpickle.decode(f.read())
         f.close()
            
-    def getCards(self):
-        f = open("Cards/data.json", "r")
-        cards = jsonpickle.decode(f.read())
-        f.close()
-        return cards
-    
-    def getCharacters(self):
-        return self.characters
-    
-    def rewriteCards(self, cards):
-        f = open("Cards/data.json", "w")
-        f.truncate()
-        f.write(jsonpickle.encode(cards))
-        f.close()
 
-    def addCard(self, card):
-        raise Exception("do not use this yet")
-        if(type(card)!= DataTypes.CardListing):
-            raise("can not process this datatype as card")
-        f = open("Cards/data.json", "r+")
-        f.seek(0, os.SEEK_END)
-        f.seek(f.tell()-1)
-        if f.read(1) != "}":
-            raise Exception("error, database aint lookin good")
-        f.seek(f.tell()-1)
-        f.truncate()
-        f.write(",")
-        f.write(jsonpickle.encode(card))
-        f.write("}")
-        f.close()
+
 
     def getCharacter(self,charid):
         return self.characters[charid]
@@ -51,7 +36,7 @@ class DataHandler():
             raise Exception("player is already registered")
         else:
             f = open(self.__get_player_path(playerid), "w")
-            f.write(jsonpickle.encode(Player.Player(playerid)))
+            f.write(jsonpickle.encode(Player(playerid)))
             f.close()
     
     def __get_player_path(self, playerid):
@@ -71,15 +56,6 @@ class DataHandler():
             return player
         else:
             raise(Exception(f"player {playerid} is not registered"))
-    
-    def modifyPlayer(self, player):
-        if(type(player) != DataTypes.Player):
-            raise("wrong type specified")
-        else:
-            f = open(self.__get_player_path(player.id), "w")
-            f.truncate()
-            f.write(jsonpickle.encode(player))
-            f.close()
 
 
 
