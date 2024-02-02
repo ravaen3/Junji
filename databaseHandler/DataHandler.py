@@ -15,7 +15,13 @@ class Player:
         self.upgrades = []
         self.inventory = []
 
-    
+
+class Character:
+    def __init__(self, name, id, series, img_urls ="test"):
+        self.name = name
+        self.id = id
+        self.series = series
+        self.img_urls = img_urls
 
 class DataHandler():
 
@@ -25,6 +31,26 @@ class DataHandler():
         self.characters = jsonpickle.decode(f.read())
         f.close()
            
+<<<<<<< Updated upstream
+=======
+    def getCards(self, character_id):
+        if os.path.exists(f"Cards/{character_id}.json"):
+            f = open(f"Cards/{character_id}.json", "r")
+            cards = jsonpickle.decode(f.read())
+            f.close()
+            return cards
+        else:
+            return DataTypes.Cards.CardList()
+
+    def getCharacters(self):
+        return self.characters
+    
+    def rewriteCards(self, cards, character_id):
+        f = open(f"Cards/{character_id}.json", "w")
+        f.truncate()
+        f.write(jsonpickle.encode(cards))
+        f.close()
+>>>>>>> Stashed changes
 
 
 
@@ -36,7 +62,11 @@ class DataHandler():
             raise Exception("player is already registered")
         else:
             f = open(self.__get_player_path(playerid), "w")
+<<<<<<< Updated upstream
             f.write(jsonpickle.encode(Player(playerid)))
+=======
+            f.write(jsonpickle.encode(DataTypes.Player(playerid)))
+>>>>>>> Stashed changes
             f.close()
     
     def __get_player_path(self, playerid):
@@ -56,6 +86,18 @@ class DataHandler():
             return player
         else:
             raise(Exception(f"player {playerid} is not registered"))
+<<<<<<< Updated upstream
+=======
+    
+    def modifyPlayer(self, player):
+        if(type(player) != DataTypes.Player):
+            raise("wrong type specified")
+        else:
+            f = open(self.__get_player_path(player.user_id), "w")
+            f.truncate()
+            f.write(jsonpickle.encode(player))
+            f.close()
+>>>>>>> Stashed changes
 
 
 

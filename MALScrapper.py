@@ -5,17 +5,12 @@ import requests
 import time
 import jsonpickle
 import random
+import DataTypes
 from sqids import Sqids
 from bs4 import BeautifulSoup
-character_amount = 100
+character_amount = 8000
 series_whitelist = [] #"https://myanimelist.net/anime/8234/Muumin"
 series_names = ["One Piece", "Dragon Ball", "Shingeki no Kyojin", "Sousou no Frieren"]
-class Character:
-    def __init__(self, name, id, series, img_urls ="test"):
-        self.name = name
-        self.id = id
-        self.series = series
-        self.img_urls = img_urls
 
 characters = []
 current_id = 0
@@ -39,8 +34,8 @@ for i in range(0,character_amount//50):
         image_url = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
         if len(image_id) != 0:
             image_url = "https://cdn.myanimelist.net/images/characters/" +image_id[0]
-        character = Character(
-            re.findall("(?<=\d\/)(.*?)(?=\")",str(entry.find("a", attrs={"class":"fs14 fw-b"})))[0],
+        character = DataTypes.Character(
+            re.findall("(?<=\d\/)(.*?)(?=\")",str(entry.find("a", attrs={"class":"fs14 fw-b"})))[0].replace("_"," "),
             current_id,
             series,
             [image_url]
