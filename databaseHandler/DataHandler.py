@@ -1,5 +1,6 @@
 import jsonpickle
 import os
+import DataTypes
 
 class Player:
     def __init__(self, user_id):
@@ -31,8 +32,6 @@ class DataHandler():
         self.characters = jsonpickle.decode(f.read())
         f.close()
            
-<<<<<<< Updated upstream
-=======
     def getCards(self, character_id):
         if os.path.exists(f"Cards/{character_id}.json"):
             f = open(f"Cards/{character_id}.json", "r")
@@ -50,7 +49,6 @@ class DataHandler():
         f.truncate()
         f.write(jsonpickle.encode(cards))
         f.close()
->>>>>>> Stashed changes
 
 
 
@@ -62,11 +60,7 @@ class DataHandler():
             raise Exception("player is already registered")
         else:
             f = open(self.__get_player_path(playerid), "w")
-<<<<<<< Updated upstream
-            f.write(jsonpickle.encode(Player(playerid)))
-=======
             f.write(jsonpickle.encode(DataTypes.Player(playerid)))
->>>>>>> Stashed changes
             f.close()
     
     def __get_player_path(self, playerid):
@@ -86,8 +80,6 @@ class DataHandler():
             return player
         else:
             raise(Exception(f"player {playerid} is not registered"))
-<<<<<<< Updated upstream
-=======
     
     def modifyPlayer(self, player):
         if(type(player) != DataTypes.Player):
@@ -97,7 +89,6 @@ class DataHandler():
             f.truncate()
             f.write(jsonpickle.encode(player))
             f.close()
->>>>>>> Stashed changes
 
 
 
