@@ -17,7 +17,7 @@ class Character:
         self.series = series
         self.img_urls = img_urls
 
-characters = {}
+characters = []
 current_id = 0
 for i in range(0,character_amount//50):
     URL = ("https://myanimelist.net/character.php?limit="+str(i*50))
@@ -45,7 +45,10 @@ for i in range(0,character_amount//50):
             series,
             [image_url]
         )
-        characters[name]=character
+        characters.append(character)
+        if characters[current_id].id != character.id:
+            print("misaligned")
+            break
         current_id += 1
     print(f"Scraping {current_id/character_amount*100}%")
     time.sleep(random.randint(8,12))
