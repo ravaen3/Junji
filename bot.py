@@ -129,7 +129,7 @@ async def register(ctx):
     except Exception as e:
         await ctx.channel.send("You are already registered!")
 
-@bot.command(aliases=["testdrop"])
+@bot.command(aliases=["d"])
 async def drop(ctx):
     sender_id = ctx.author.id
     if(dh.is_registered(sender_id)):
@@ -148,7 +148,7 @@ async def drop(ctx):
     else: 
         await ctx.channel.send(NOT_REGISTERED_MESSAGE)
 
-@bot.command()
+@bot.command(aliases=["cd"])
 async def cooldown(ctx):
     sender_id = ctx.author.id
     try:
@@ -163,7 +163,16 @@ async def cooldown(ctx):
             else:
                 await ctx.channel.send(f"You have {player.rolls} total drops left, next drop is coming in {dropcooldown}")  
         else:
-            await ctx.channel.send(f"you have {player.rolls} drops left, next drop is coming in {dropcooldown}")          
+            await ctx.channel.send(f"You have {player.rolls} drops left, next drop is coming in {dropcooldown}")
+        since_last_grab = (time.time()//1)-player.last_grab_time
+        player.grabs += since_last_grab//TIME_PER_GRAB
+        grabcooldown = round(TIME_PER_ROLL - (since_last_grab%TIME_PER_ROLL), 1)
+        if player.grabs >= player.max_grabs:
+            await ctx.channel.send(f"You have {player.max_grabs} grabs left")
+        elif player.grabs > 0:
+            await ctx.channel.send(f"You have {player.grabs} grabs left, the next grab is coming in {grabcooldown}")
+        else:
+            await ctx.channel.send(f"You have no grabs loser! Take some adderall and try again in {grabcooldown} seconds")
     except:
         await ctx.channel.send(NOT_REGISTERED_MESSAGE)
 
