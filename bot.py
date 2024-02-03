@@ -1,5 +1,4 @@
 from asyncio.windows_events import NULL
-import asyncio
 import random
 import idgen
 from tracemalloc import start
@@ -127,7 +126,7 @@ async def register(ctx):
     try: 
         dh.register(sender_id)
         await ctx.channel.send("You have registered successfully!")
-    except:
+    except Exception as e:
         await ctx.channel.send("You are already registered!")
 
 @bot.command(aliases=["testdrop"])
@@ -147,6 +146,25 @@ async def drop(ctx):
             await ctx.channel.send("You have no drops left! Next drop available in " +str(round(TIME_PER_ROLL-since_last_roll,1))+" seconds!")
         dh.modifyPlayer(player)
     else: 
+        await ctx.channel.send(NOT_REGISTERED_MESSAGE)
+
+@bot.command()
+async def cooldown(ctx):
+    sender_id = ctx.author.id
+    try:
+        player = dh.getPlayer(sender_id)
+        since_last_roll = (time.time()//1)-player.last_roll_time
+        player.rolls += since_last_roll//TIME_PER_ROLL
+        dropcooldown = round(TIME_PER_ROLL - (since_last_roll%TIME_PER_ROLL), 1)
+        if(player.rolls)>0:
+            if player.rolls >= player.max_rolls:
+                player.rolls = player.max_rolls
+                await ctx.channel.send(f"you have {player.rolls} drops left which is the max")
+            else:
+                await ctx.channel.send(f"You have {player.rolls} total drops left, next drop is coming in {dropcooldown}")  
+        else:
+            await ctx.channel.send(f"you have {player.rolls} drops left, next drop is coming in {dropcooldown}")          
+    except:
         await ctx.channel.send(NOT_REGISTERED_MESSAGE)
 
 if(len(sys.argv)>=2 and sys.argv[1]=='run'):

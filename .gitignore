@@ -1,1 +1,7 @@
 .env
+*.pyc
+__pycache__
+*/__pycache__/*
+Players
+Cards
+Characters
