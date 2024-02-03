@@ -21,11 +21,11 @@ class CardList:
         for i in range(1, self.max_id):
             self.available_ids.append(i)
         random.shuffle(self.available_ids)
-        self.cards = []
-    def getCard(self):
+        self.cards = {}
+    def getCard(self, user_id):
         card = self.available_ids.pop()
         self.available_ids.append(self.max_id)
-        self.cards.append(card)
+        self.cards[card] = user_id
         self.max_id+=1
         return card
     def burnCard(self, card_id):

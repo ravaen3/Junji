@@ -49,7 +49,7 @@ class Claim(discord.ui.View):
         elif player.grabs>0:             
             self.claimed = True
             card_list = dh.getCards(self.character.id)
-            card_id = card_list.getCard()
+            card_id = card_list.getCard(player.user_id)
             player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
             dh.rewriteCards(card_list, self.character.id)
             player.grabs-=1
@@ -99,6 +99,13 @@ bot = commands.Bot(command_prefix="!",intents=intents)
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
+
+
+@bot.command(aliases=["g"])
+async def give(ctx, target = NULL, card = NULL):
+    if target == NULL:
+        await ctx.channel.send("Syntax: !g <target> <card-index>")
+    print (target)
 @bot.command(aliases=["c"])
 async def collection(ctx, target = "user"):
     if target == "user":
@@ -110,11 +117,11 @@ async def collection(ctx, target = "user"):
         player = dh.getPlayer(str(target))
         user = await bot.fetch_user(player.user_id)
         embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
+        i = 0
         for card in player.cards:
-
-            embedVar.add_field(name="",value=f"**{characters[card.character_id].name}**-*{card.id}*", inline= False)
-        await ctx.channel.send(content="",embed=embedVar)    
-
+            i+=1
+            embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
+        await ctx.channel.send(content="",embed=embedVar)
     else:
         await ctx.channel.send("That user is not yet registered!")
     
