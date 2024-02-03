@@ -10,6 +10,7 @@ class Player:
         self.max_grabs = 2
         self.last_roll_time = 0
         self.last_grab_time = 0
+        self.wishlist = []
         self.cards = []
         self.upgrades = []
         self.inventory = []

@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 import time
 import os
+import re
 from dotenv import load_dotenv
 import base64
 import sys
@@ -37,26 +38,36 @@ class Claim(discord.ui.View):
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             player = dh.getPlayer(interaction.user.id)
+            since_last_grab = (time.time()//1)-player.last_grab_time
+            player.grabs += since_last_grab//TIME_PER_GRAB
+            if player.grabs>player.max_grabs:
+                player.grabs=player.max_grabs
+            if self.claimed:
+                await interaction.response.send_message("This character has already been claimed", ephemeral=True)
+            elif player.grabs>0:             
+                self.claimed = True
+                card_list = dh.getCards(self.character.id)
+                card_id = card_list.getCard(player.user_id)
+                player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
+                dh.rewriteCards(card_list, self.character.id)
+                player.grabs-=1
+                player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
+                await interaction.response.send_message(f"{interaction.user.mention} claimed {self.character.name} Card ID: {card_id}")
+            dh.modifyPlayer(player)
         except Exception as ex:
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
-            return
-        since_last_grab = (time.time()//1)-player.last_grab_time
-        player.grabs += since_last_grab//TIME_PER_GRAB
-        if player.grabs>player.max_grabs:
-            player.grabs=player.max_grabs
-        if self.claimed:
-            await interaction.response.send_message("This character has already been claimed", ephemeral=True)
-        elif player.grabs>0:             
-            self.claimed = True
-            card_list = dh.getCards(self.character.id)
-            card_id = card_list.getCard(player.user_id)
-            player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
-            dh.rewriteCards(card_list, self.character.id)
-            player.grabs-=1
-            player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
-            await interaction.response.send_message(f"{interaction.user.mention} claimed {self.character.name} Card ID: {card_id}")
-        dh.modifyPlayer(player)
 
+class ClaimGift(discord.ui.View):
+    def __init__(self, *, timeout: float | None = 180):
+        super().__init__(timeout=timeout)
+        self.accepted = False
+    @discord.ui.button(label="Accept",style=discord.ButtonStyle.green)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        try:
+            player = dh.getPlayer(interaction.user.id)
+            
+        except Exception as ex:
+            await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
 class CardListing:
     def __init__(self, id, owner_id):
         self.id = id
@@ -102,18 +113,28 @@ async def on_ready():
 
 
 @bot.command(aliases=["g"])
-async def give(ctx, target = NULL, card = NULL):
-    if target == NULL:
-        await ctx.channel.send("Syntax: !g <target> <card-index>")
-    print (target)
+async def give(ctx, target , card_index):
+    card_index=int(card_index)-1
+    if dh.is_registered(target):
+        giver = dh.getPlayer(ctx.author.id)
+        taker = dh.getPlayer(target)
+        card = giver.cards.pop(card_index)
+        cards = dh.getCards(card.character_id)
+        taker.cards.append(card)
+        cards.cards[card.id] = taker.user_id
+        dh.modifyPlayer(giver)
+        dh.modifyPlayer(taker)
+        dh.rewriteCards(cards, card.character_id)
+    else:
+        await ctx.channel.send("That user is not yet registered!")
+
 @bot.command(aliases=["c"])
 async def collection(ctx, target = "user"):
     if target == "user":
         target = ctx.author.id
     else:
         print(target)
-    is_registered = os.path.exists("Players/"+str(target)+".json")
-    if is_registered:
+    if dh.is_registered(target):
         player = dh.getPlayer(str(target))
         user = await bot.fetch_user(player.user_id)
         embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
@@ -158,8 +179,8 @@ async def drop(ctx):
 @bot.command(aliases=["cd"])
 async def cooldown(ctx):
     sender_id = ctx.author.id
-    try:
-        player = dh.getPlayer(sender_id)
+    if dh.is_registered(sender_id):
+        player = dh.getPlayer(ctx.author.id)
         since_last_roll = (time.time()//1)-player.last_roll_time
         player.rolls += since_last_roll//TIME_PER_ROLL
         dropcooldown = round(TIME_PER_ROLL - (since_last_roll%TIME_PER_ROLL), 1)
@@ -168,7 +189,7 @@ async def cooldown(ctx):
                 player.rolls = player.max_rolls
                 await ctx.channel.send(f"you have {player.rolls} drops left which is the max")
             else:
-                await ctx.channel.send(f"You have {player.rolls} total drops left, next drop is coming in {dropcooldown}")  
+                await ctx.channel.send(f"You have no drops left, next drop is coming in {dropcooldown}")  
         else:
             await ctx.channel.send(f"You have {player.rolls} drops left, next drop is coming in {dropcooldown}")
         since_last_grab = (time.time()//1)-player.last_grab_time
@@ -180,7 +201,7 @@ async def cooldown(ctx):
             await ctx.channel.send(f"You have {player.grabs} grabs left, the next grab is coming in {grabcooldown}")
         else:
             await ctx.channel.send(f"You have no grabs loser! Take some adderall and try again in {grabcooldown} seconds")
-    except:
+    else:
         await ctx.channel.send(NOT_REGISTERED_MESSAGE)
 
 if(len(sys.argv)>=2 and sys.argv[1]=='run'):

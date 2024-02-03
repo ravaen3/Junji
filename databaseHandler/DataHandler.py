@@ -1,7 +1,7 @@
 import jsonpickle
 import os
 import DataTypes
- 
+import re
 class Player:
     def __init__(self, user_id):
         self.user_id = user_id
@@ -67,12 +67,17 @@ class DataHandler():
         return self.basePath + "/Players/" + str(playerid) + ".json"
     
     def is_registered(self, playerid):
+            if isinstance(playerid, str):
+                playerid = int(re.search(r"\d+", playerid).group())
+            print(playerid)
             if(os.path.exists(self.__get_player_path(playerid))):
                 return True
             else:
                 return False
     
     def getPlayer(self, playerid):
+        if isinstance(playerid, str):
+                playerid = int(re.search(r"\d+", playerid).group())
         if(self.is_registered(playerid)):
             f = open(self.__get_player_path(playerid))
             player = jsonpickle.decode(f.read())
