@@ -22,18 +22,19 @@ idGen = idgen.RandomId()
 load_dotenv()
 BASE_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NOT_REGISTERED_MESSAGE = "You can't perform this action because you are not yet registered. Register with !register"
-TIME_PER_ROLL = 300
-TIME_PER_GRAB = 1200
+TIME_PER_ROLL = 600
+TIME_PER_GRAB = 1800
 
 characters = dh.getCharacters()
 class BotData(object):
     pass
+
 class Claim(discord.ui.View):
     def __init__(self, character):
         super().__init__()
         self.value = None
         self.claimed = False
-        self.character = character
+        self.character = character 
     @discord.ui.button(label='Claim', style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
@@ -56,7 +57,31 @@ class Claim(discord.ui.View):
             dh.modifyPlayer(player)
         except Exception as ex:
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
-
+class NextPage(discord.ui.View):
+    def __init__(self, book):
+        super().__init__()
+        self.book = book
+        self.current_page = 0
+    @discord.ui.button(label="<-", style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page > 0:
+            self.current_page-=1
+            embedVar = discord.Embed(title=(f"Collection"))
+            i = 1+(self.current_page*25)
+            for card in self.book[self.current_page]:
+                embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
+                i+=1
+            await interaction.response.edit_message(embed=embedVar)
+    @discord.ui.button(label="->", style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page+1 < len(self.book):
+            self.current_page+=1
+            embedVar = discord.Embed(title=(f"Collection"))
+            i = 1+(self.current_page*25)
+            for card in self.book[self.current_page]:
+                embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
+                i+=1
+            await interaction.response.edit_message(embed=embedVar)
 class ClaimGift(discord.ui.View):
     def __init__(self, *, timeout: float | None = 180):
         super().__init__(timeout=timeout)
@@ -111,6 +136,13 @@ bot = commands.Bot(command_prefix="!",intents=intents)
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
+@bot.command(aliases=["v"])
+async def view(ctx, card_index, target):
+    card_index=int(card_index)-1
+    if dh.is_registered(target):
+        target = dh.getPlayer(target)
+        card = target.cards[card_index]
+
 
 @bot.command(aliases=["g"])
 async def give(ctx, target , card_index):
@@ -127,9 +159,13 @@ async def give(ctx, target , card_index):
         dh.rewriteCards(cards, card.character_id)
     else:
         await ctx.channel.send("That user is not yet registered!")
+@bot.command(aliases=["b"])
+async def burn(ctx, card_index):
+    if dh.is_registered(ctx.author.id):
+        player = dh.getPlayer(str(ctx.author.id))
 
 @bot.command(aliases=["c"])
-async def collection(ctx, target = "user"):
+async def collection(ctx, target = "user", page=1):
     if target == "user":
         target = ctx.author.id
     else:
@@ -138,11 +174,21 @@ async def collection(ctx, target = "user"):
         player = dh.getPlayer(str(target))
         user = await bot.fetch_user(player.user_id)
         embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
-        i = 0
+        book = []
+        page = []
         for card in player.cards:
-            i+=1
+            if len(page) < 25:
+                page.append(card)
+            else:
+                book.append(page)
+                page = []
+        book.append(page)
+        i = 1
+        for card in book[0]:
             embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
-        await ctx.channel.send(content="",embed=embedVar)
+            i+=1
+        view1 = NextPage(book)
+        await ctx.channel.send(content="",embed=embedVar, view=view1)
     else:
         await ctx.channel.send("That user is not yet registered!")
     
