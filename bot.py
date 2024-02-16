@@ -15,7 +15,6 @@ import sys
 import DataTypes
 import databaseHandler.DataHandler
 
-
 dh = databaseHandler.DataHandler.DataHandler(".")
 
 idGen = idgen.RandomId()
@@ -54,34 +53,12 @@ class Claim(discord.ui.View):
                 player.grabs-=1
                 player.last_grab_time = time.time() - (since_last_grab % TIME_PER_GRAB)
                 await interaction.response.send_message(f"{interaction.user.mention} claimed {self.character.name} Card ID: {card_id}")
+            else:
+                await interaction.response.send_message("You have no more grabs!", ephemeral=True)
+
             dh.modifyPlayer(player)
         except Exception as ex:
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
-class NextPage(discord.ui.View):
-    def __init__(self, book):
-        super().__init__()
-        self.book = book
-        self.current_page = 0
-    @discord.ui.button(label="<-", style=discord.ButtonStyle.blurple)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.current_page > 0:
-            self.current_page-=1
-            embedVar = discord.Embed(title=(f"Collection"))
-            i = 1+(self.current_page*25)
-            for card in self.book[self.current_page]:
-                embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
-                i+=1
-            await interaction.response.edit_message(embed=embedVar)
-    @discord.ui.button(label="->", style=discord.ButtonStyle.blurple)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.current_page+1 < len(self.book):
-            self.current_page+=1
-            embedVar = discord.Embed(title=(f"Collection"))
-            i = 1+(self.current_page*25)
-            for card in self.book[self.current_page]:
-                embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
-                i+=1
-            await interaction.response.edit_message(embed=embedVar)
 class ClaimGift(discord.ui.View):
     def __init__(self, *, timeout: float | None = 180):
         super().__init__(timeout=timeout)
@@ -107,6 +84,41 @@ class Card:
         self.options = CardOptions()
     async def sendAsCard(self, channel):
         name = self.character.name.replace("_"," ")
+
+class NextPage(discord.ui.View):
+    def __init__(self, book, start_page):
+        super().__init__()
+        self.book = book
+        self.current_page = start_page-1
+    @discord.ui.button(label="<-", style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page > 0:
+            self.current_page-=1
+            embedVar = discord.Embed(title=(f"Collection"))
+            embedVar.add_field(name="",value=create_page(self.book,self.current_page), inline= False)
+            await interaction.response.edit_message(embed=embedVar)
+    @discord.ui.button(label="->", style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.current_page+1 < len(self.book):
+            self.current_page+=1
+            embedVar = discord.Embed(title=(f"Collection"))
+            embedVar.add_field(name="",value=create_page(self.book,self.current_page), inline= False)
+            await interaction.response.edit_message(embed=embedVar)
+
+def create_page(book, page_index):
+    i = page_index*20
+    content = ""
+    page = book[page_index]
+    for card in page:
+        i+=1
+        character = characters[card.character_id]
+        line = f"{i} **{character.name}**-{card.id} *{character.series[0]}"
+        if len(line)>50:
+            content+=f"{line:.47}...*\n"
+        else:
+            content+=f"{line:.50}*\n"
+    return content
+
 
 def load_data():
     f = open("data.json")
@@ -157,6 +169,7 @@ async def give(ctx, target , card_index):
         dh.modifyPlayer(giver)
         dh.modifyPlayer(taker)
         dh.rewriteCards(cards, card.character_id)
+        await ctx.channel.send(f"{ctx.author.mention} gave {characters[card.character_id].name} to {target}")
     else:
         await ctx.channel.send("That user is not yet registered!")
 @bot.command(aliases=["b"])
@@ -165,7 +178,7 @@ async def burn(ctx, card_index):
         player = dh.getPlayer(str(ctx.author.id))
 
 @bot.command(aliases=["c"])
-async def collection(ctx, target = "user", page=1):
+async def collection(ctx, target = "user", start_page=1):
     if target == "user":
         target = ctx.author.id
     else:
@@ -177,22 +190,20 @@ async def collection(ctx, target = "user", page=1):
         book = []
         page = []
         for card in player.cards:
-            if len(page) < 25:
-                page.append(card)
-            else:
+            page.append(card)
+            if len(page) == 20:
                 book.append(page)
                 page = []
         book.append(page)
-        i = 1
-        for card in book[0]:
-            embedVar.add_field(name="",value=f"**{i} {characters[card.character_id].name}**-*{card.id}*", inline= False)
-            i+=1
-        view1 = NextPage(book)
+
+        embedVar.add_field(name="",value=create_page(book,start_page-1), inline= False)
+        view1 = NextPage(book, start_page)
         await ctx.channel.send(content="",embed=embedVar, view=view1)
     else:
         await ctx.channel.send("That user is not yet registered!")
-    
-    
+
+
+
 @bot.command(aliases=["r"])
 async def register(ctx):
     sender_id = ctx.author.id

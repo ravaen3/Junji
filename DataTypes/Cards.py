@@ -9,10 +9,10 @@ class Card:
     async def sendAsCard(self, channel):
         name = self.character.name.replace("_"," ")
 
-
 class CardOptions:
     def __init__(self):
         self.img = 0
+        
 class CardList:
     def __init__(self):
         random.seed(time.time())
@@ -24,7 +24,7 @@ class CardList:
         self.cards = {}
     def getCard(self, user_id):
         card = self.available_ids.pop()
-        self.available_ids.append(self.max_id)
+        self.available_ids.insert(random.randint(0,len(self.available_ids)),self.max_id)
         self.cards[card] = user_id
         self.max_id+=1
         return card

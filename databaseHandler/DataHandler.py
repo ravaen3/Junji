@@ -2,28 +2,6 @@ import jsonpickle
 import os
 import DataTypes
 import re
-class Player:
-    def __init__(self, user_id):
-        self.user_id = user_id
-        self.curreny = 0
-        self.rolls = 20
-        self.grabs = 1
-        self.max_rolls = 10
-        self.max_grabs = 2
-        self.last_roll_time = 0
-        self.last_grab_time = 0
-        self.cards = []
-        self.upgrades = []
-        self.inventory = []
-
-
-class Character:
-    def __init__(self, name, id, series, img_urls ="test"):
-        self.name = name
-        self.id = id
-        self.series = series
-        self.img_urls = img_urls
-
 class DataHandler():
 
     def __init__(self, baseDataPath):
@@ -69,7 +47,6 @@ class DataHandler():
     def is_registered(self, playerid):
             if isinstance(playerid, str):
                 playerid = int(re.search(r"\d+", playerid).group())
-            print(playerid)
             if(os.path.exists(self.__get_player_path(playerid))):
                 return True
             else:
