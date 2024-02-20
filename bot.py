@@ -3,12 +3,10 @@ import random
 import idgen
 from tracemalloc import start
 from typing import Optional
-import jsonpickle
 import discord
 from discord.ext import commands
 import time
 import os
-import re
 from dotenv import load_dotenv
 import base64
 import sys
@@ -47,7 +45,7 @@ class Claim(discord.ui.View):
             elif player.grabs>0:             
                 self.claimed = True
                 card_list = dh.getCards(self.character.id)
-                card_id = card_list.getCard(player.user_id)
+                card_id = card_list.claimCard(player.user_id)
                 player.cards.append(DataTypes.Cards.Card(card_id,self.character.id))
                 dh.rewriteCards(card_list, self.character.id)
                 player.grabs-=1
@@ -58,6 +56,7 @@ class Claim(discord.ui.View):
 
             dh.modifyPlayer(player)
         except Exception as ex:
+            print(ex)
             await interaction.response.send_message(NOT_REGISTERED_MESSAGE)
 class ClaimGift(discord.ui.View):
     def __init__(self, *, timeout: float | None = 180):
@@ -105,30 +104,26 @@ class NextPage(discord.ui.View):
             embedVar.add_field(name="",value=create_page(self.book,self.current_page), inline= False)
             await interaction.response.edit_message(embed=embedVar)
 
+class BurnCard(discord.ui.View):
+    def __init__(self, card_list, card_id):
+        super().__init__()
+        self.card_list = card_list
+        self.card_id = card_id
+    @discord.ui.button(label="Burn", style=discord.ButtonStyle.green)
+    async def burn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("test burn")
+
 def create_page(book, page_index):
-    i = page_index*20
     content = ""
     page = book[page_index]
     for card in page:
-        i+=1
         character = characters[card.character_id]
-        line = f"{i} **{character.name}**-{card.id} *{character.series[0]}"
+        line = f"{card.index} **{character.name}**-{card.id} *{character.series[0]}"
         if len(line)>50:
             content+=f"{line:.47}...*\n"
         else:
             content+=f"{line:.50}*\n"
     return content
-
-
-def load_data():
-    f = open("data.json")
-    botdata = jsonpickle.decode(f.read())
-    f.close()
-def load_characters():
-    f = open("Characters/data.json", "r")
-    data = jsonpickle.decode(f.read())
-    f.close()
-    return data
 
 async def generate_card_drop(channel):
     random.seed(time.time())
@@ -138,8 +133,6 @@ async def generate_card_drop(channel):
     embedVar.set_image(url=drop.img_urls[0])
     view1 = Claim(drop)
     await channel.send(content=mstring, embed=embedVar, view=view1)
-def load_card():
-    pass
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -150,16 +143,15 @@ async def on_ready():
 
 @bot.command(aliases=["v"])
 async def view(ctx, card_index, target):
-    card_index=int(card_index)-1
+    card_index=int(card_index)
     if dh.is_registered(target):
         target = dh.getPlayer(target)
         card = target.cards[card_index]
 
-
 @bot.command(aliases=["g"])
 async def give(ctx, target , card_index):
     card_index=int(card_index)-1
-    if dh.is_registered(target):
+    if dh.is_registered(target) and dh.is_registered(ctx.author.id):      
         giver = dh.getPlayer(ctx.author.id)
         taker = dh.getPlayer(target)
         card = giver.cards.pop(card_index)
@@ -174,35 +166,31 @@ async def give(ctx, target , card_index):
         await ctx.channel.send("That user is not yet registered!")
 @bot.command(aliases=["b"])
 async def burn(ctx, card_index):
+    card_index=int(card_index)
+
     if dh.is_registered(ctx.author.id):
         player = dh.getPlayer(str(ctx.author.id))
-
-@bot.command(aliases=["c"])
-async def collection(ctx, target = "user", start_page=1):
+@bot.command(aliases=["$"])
+async def balance(ctx, target = "user"):
     if target == "user":
         target = ctx.author.id
-    else:
-        print(target)
+    if dh.is_registered(target):
+        player = dh.getPlayer(str(target))
+        await ctx.channel.send(f"{player.curreny}$")
+@bot.command(aliases=["c"])
+async def collection(ctx, target = "user", sort="index", start_page=1):
+    if target == "user":
+        target = ctx.author.id
     if dh.is_registered(target):
         player = dh.getPlayer(str(target))
         user = await bot.fetch_user(player.user_id)
         embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
-        book = []
-        page = []
-        for card in player.cards:
-            page.append(card)
-            if len(page) == 20:
-                book.append(page)
-                page = []
-        book.append(page)
-
+        book = player.create_book(sort, characters)
         embedVar.add_field(name="",value=create_page(book,start_page-1), inline= False)
         view1 = NextPage(book, start_page)
         await ctx.channel.send(content="",embed=embedVar, view=view1)
     else:
         await ctx.channel.send("That user is not yet registered!")
-
-
 
 @bot.command(aliases=["r"])
 async def register(ctx):

@@ -1,18 +1,21 @@
 import discord
 import random
 import time
+
+
+
 class Card:
     def __init__(self, card_id, character_id):
         self.id = card_id
         self.character_id = character_id
         self.options = CardOptions()
-    async def sendAsCard(self, channel):
-        name = self.character.name.replace("_"," ")
-
+    def get_character(self, characters):
+        self.character = characters[self.character_id]
+        return self.character
 class CardOptions:
     def __init__(self):
         self.img = 0
-        
+
 class CardList:
     def __init__(self):
         random.seed(time.time())
@@ -22,7 +25,7 @@ class CardList:
             self.available_ids.append(i)
         random.shuffle(self.available_ids)
         self.cards = {}
-    def getCard(self, user_id):
+    def claimCard(self, user_id):
         card = self.available_ids.pop()
         self.available_ids.insert(random.randint(0,len(self.available_ids)),self.max_id)
         self.cards[card] = user_id

@@ -1,5 +1,4 @@
-import discord
-import databaseHandler
+
 class Player:
     def __init__(self, user_id):
         self.user_id = user_id
@@ -14,10 +13,30 @@ class Player:
         self.cards = []
         self.upgrades = []
         self.inventory = []
-    async def collection(self, channel, bot):
-        print(self.user_id)
-        user = await bot.fetch_user(self.user_id)
-        embedVar = discord.Embed(title=(f"{user.name}'s Collection"))
+    def create_book(self, sort, characters):
+        book = []
+        page = []
+        i = 0
+        cards = []
         for card in self.cards:
-            embedVar.add_field(name=card.id, value=card.character.name)
-        await channel.send(content="test",embed=embedVar)
+            card.index = i
+            card.get_character(characters)
+            i+=1
+            cards.append(card)
+        match sort:
+            case "index":
+                pass
+            case "series":
+                cards = sorted(cards, key=lambda x: x.character.series[0])
+            case "name":
+                cards = sorted(cards, key=lambda x: x.character.name)
+            case "id":
+                cards = sorted(cards, key=lambda x: x.id)
+        for card in cards:
+            page.append(card)
+            if len(page) == 20:
+                book.append(page)
+                page = []
+        book.append(page)
+        self.book = book
+        return book
