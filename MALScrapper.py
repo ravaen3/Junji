@@ -5,7 +5,7 @@ import requests
 import time
 import jsonpickle
 import random
-import DataTypes
+import Data
 from sqids import Sqids
 from bs4 import BeautifulSoup
 character_amount = 8000
@@ -34,7 +34,7 @@ for i in range(0,character_amount//50):
         image_url = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
         if len(image_id) != 0:
             image_url = "https://cdn.myanimelist.net/images/characters/" +image_id[0]
-        character = DataTypes.Character(
+        character = Data.Character(
             re.findall("(?<=\d\/)(.*?)(?=\")",str(entry.find("a", attrs={"class":"fs14 fw-b"})))[0].replace("_"," "),
             current_id,
             series,

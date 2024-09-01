@@ -1,6 +1,6 @@
 import jsonpickle
 import os
-import DataTypes
+import Data
 import re
 class DataHandler():
 
@@ -17,7 +17,7 @@ class DataHandler():
             f.close()
             return cards
         else:
-            return DataTypes.Cards.CardList()
+            return Data.Cards.CardList()
 
     def getCharacters(self):
         return self.characters
@@ -38,7 +38,7 @@ class DataHandler():
             raise Exception("player is already registered")
         else:
             f = open(self.__get_player_path(playerid), "w")
-            f.write(jsonpickle.encode(DataTypes.Player(playerid)))
+            f.write(jsonpickle.encode(Data.Player(playerid)))
             f.close()
     
     def __get_player_path(self, playerid):
@@ -64,7 +64,7 @@ class DataHandler():
             raise(Exception(f"player {playerid} is not registered"))
     
     def modifyPlayer(self, player):
-        if(type(player) != DataTypes.Player):
+        if(type(player) != Data.Player):
             raise("wrong type specified")
         else:
             f = open(self.__get_player_path(player.user_id), "w")
