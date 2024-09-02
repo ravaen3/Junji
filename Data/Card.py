@@ -55,6 +55,7 @@ class Card:
         print(character.art_urls)
         response = requests.get(character.art_urls["0"])
         cardim = Image.open(BytesIO(response.content))
+        cardim=ImageOps.fit(cardim,(400, 600))
         img = Image.new("RGBA", (400, 600))
         img.paste(cardim)
         img.paste(borderc, (0,0),BORDER.convert("RGBA"))
@@ -62,7 +63,7 @@ class Card:
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 30)
         draw.text((20, 515),f"{character.name}",(0,0,0), font=font)
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 20)
-        draw.text((20, 550),f"{character.series}",(0,0,0), font=font)
+        draw.text((20, 550),f"{character.series[0]}",(0,0,0), font=font)
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 30)
         draw.text((260, 540),f"{round(self.quality*100,1)}%",(0,0,0), font=font)
         return img
