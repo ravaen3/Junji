@@ -15,6 +15,17 @@
             ],
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: Bot.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/bot.py",
+            "args" : [
+                "run"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

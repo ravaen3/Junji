@@ -25,17 +25,32 @@ prefix = "j"
 bot = commands.Bot(command_prefix=prefix,intents=intents)
 characters = dh.get_characters()
 NOT_REGISTERED=f"You are not registered, register with `{prefix}register`"
-
-
-class Claim(discord.ui.View):
-    def __init__(self,character):
+TIME_PER_GRAB = 30
+class ClaimButton(discord.ui.Button["ClaimView"]):
+    def __init__(self, card_index, card):
+        super().__init__(style=discord.ButtonStyle.green, label=str(card_index+1))
+        self.card_index=card_index
+        self.card=card
+    async def callback(self, interaction: discord.Interaction):
+        player = await get_player(interaction, interaction.user.id)
+        if not player:
+            return
+        since_last_grab = time.time()-player.last_grab_time
+        if since_last_grab < TIME_PER_GRAB:
+            await interaction.response.send_message(f"{interaction.user.mention} you have no more grabs! Your next grab is available in {(TIME_PER_GRAB-since_last_grab):.1f} seconds!",ephemeral=True)
+            return
+        player.last_grab_time = time.time()
+        self.disabled = True
+        player.inventory.cards.append(self.card)
+        player.save()
+        await interaction.response.send_message(f"{interaction.user.mention} claimed the {self.card.character.name} card!")
+    pass
+class ClaimView(discord.ui.View):
+    def __init__(self,cards):
         super().__init__()
-        self.characters=characters
-    @discord.ui.button(label="1", style=discord.ButtonStyle.green)
-    async def claim1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        player = dh.is_registered(interaction.user.id)
-        if player:
-            pass
+        self.cards=cards
+        for i in range(0,len(cards)):
+            self.add_item(ClaimButton(i, cards[i]))
 
 async def generate_drop(ctx):
     seed = time.time()
@@ -51,7 +66,8 @@ async def generate_drop(ctx):
         image.save(buffer, format="PNG")
         file = discord.File(fp=buffer,filename="test.png")
         buffer.seek(0)
-        await ctx.channel.send(file=file)
+        view1 = ClaimView(cards)
+        await ctx.channel.send(file=file, view=view1)
 
 async def get_player(ctx, id=None):
     id = ctx.author.id if id is None else id
@@ -77,22 +93,24 @@ MAX_DROPS = 3
 @bot.command(aliases=["d"])
 async def drop(ctx):
     player = await get_player(ctx)
-    if player:
-        since_last_drop = (time.time()//1)-player.last_drop_time
-        player.drops += since_last_drop//TIME_PER_DROP
-        if player.drops>0:
-            if player.drops >= MAX_DROPS:
-                player.drops = MAX_DROPS
-            player.drops-=1
-            await generate_drop(ctx)
-            player.last_drop_time = time.time() - (since_last_drop % TIME_PER_DROP)
-        else:
-            await ctx.channel.send(f"You have no drops left! Next drop available in {str(round(TIME_PER_DROP-since_last_drop,1))} seconds!")
+    if not player:
+        return
+    since_last_drop = (time.time()//1)-player.last_drop_time
+    player.drops += since_last_drop//TIME_PER_DROP
+    if player.drops<=0:
+        await ctx.channel.send(f"You have no drops left! Next drop available in {(TIME_PER_DROP-since_last_drop):.1f} seconds!")
         player.save()
+        return
+    if player.drops >= MAX_DROPS:
+        player.drops = MAX_DROPS
+    player.drops-=1
+    await generate_drop(ctx)
+    player.last_drop_time = time.time() - (since_last_drop % TIME_PER_DROP)
+    player.save()
 
 
 
 
 
 #if(len(sys.argv)>=2 and sys.argv[1]=='run'):
-bot.run(base64.b64decode(os.getenv('TOKEN').encode("utf-8")).decode("utf-8"))
+bot.run(os.getenv('TOKEN'))

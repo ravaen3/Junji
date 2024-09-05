@@ -29,6 +29,7 @@ class Player:
         self.last_drop_time = 0
 
     def save(self):
+        print(self)
         dh.save_player(self)
     def drop():
         pass

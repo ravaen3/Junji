@@ -3,7 +3,7 @@ import sys, os
 import Data.Player
 jsp = jsonpickle
 class DataHandler:
-    def __init__(self, base_path="."):
+    def __init__(self, base_path="Data"):
         self.base_path = base_path
         pass
     def is_registered(self,id):
@@ -22,7 +22,7 @@ class DataHandler:
         return player
     def save_player(self,player):
         f = open(f"{self.base_path}/Players/{player.user_id}.json", "w")
-        f.write(jsp.encode(Data.Player(player)))
+        f.write(jsp.encode(player))
         f.close()
     def get_characters(self):
         f = open(f"{self.base_path}/Characters/data.json", "r")

@@ -12,7 +12,7 @@ import base64
 import sys
 import Data
 import databaseHandler.DataHandler
-import CardArt.cardart
+import CardArt
 
 idGen = idgen.RandomId()
 load_dotenv()
