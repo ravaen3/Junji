@@ -7,32 +7,43 @@ from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw, ImageOps
 
 dh = Data.DataHandler.DataHandler()
-STATS = ["strength","intelligence","charisma","defense","magic_resistance"]
-ELEMENTS = ["void","lava","ice","fairy","slime"]
+STATS = ("strength","intelligence","speed","defense","magic_resistance")
+ELEMENTS = ("void","lava","ice","fairy","slime")
 
 BORDER = Image.open("CardArt\Assets\Border.png")
 class Card:
     def __init__(self, character, seed = time.time()):
+        #Card Information
         self.card_id = None
+        self.type = "normal"
         self.character=character.get_listing("long")
-        self.options = CardOptions()
+        self.owner_id = None
+        self.history = []
+
+        #Customisation
+        self.options = CardOptions() #Cosmetic
+
+        #Battle
         self.level = 1
         self.stats = {}
         random.seed(seed)
         self.element = random.choice(ELEMENTS)
-        #strength, intelligence, charisma, agility, pr, mr, health, luck
         stat_total = 0
         for stat in STATS:
             self.stats[stat] = random.randint(0,100)
             stat_total+=self.stats[stat]
         self.stats["health"]=100
         self.quality = stat_total/500
-        self.owner = None
+
     def print(self):
         print(f"Character: {self.character} Series: {self.series} Stats: {self.stats} Quality: {self.quality}")
-    def getCharacter(self):
-        self.character_id
 
+    def set_owner(self, player):
+
+        self.owner_id = player.user_id
+        self.history.append((self.owner_id, time.time()))
+    def claim(self):
+        pass
     def save(self):
         dh.save_card(self)
     def fuse(self, card):
@@ -79,21 +90,14 @@ class CardListing:
 
 class CardOptions:
     def __init__(self):
+        #Cosmetic
         self.img = 0
         self.border = ""
         self.font = ""
         self.font_color = ""
-
-#"3hGLn" <- 1. PLAYER INVENTORY 2. Locatable by code 
-#"3/hGLn.json"
-#!serieslookup Jujutsu
-#Select -> Jujutsu Kaisen
-#Open and Display -> Data/Series/Jujutsu_Kaisen.csv
-
-#Data/Characters ->
-#Data/Series -> JSON file 
-#Data/Player -> JSON file for each player
-#Data/Cards -> JSON file for each card 3hGLn
+        #Battle
+        self.equipment = [None,None,None,None] #Head, Torso, Legs, Weapon
+        self.moves = []
 
 class CardList:
     def __init__(self):

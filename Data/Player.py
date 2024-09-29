@@ -31,8 +31,11 @@ class Player:
     def save(self):
         print(self)
         dh.save_player(self)
+    def claim(self, card):
+        card.set_owner(self)
+        card.claim()
+        self.inventory.cards.append(card)
     def drop():
-        pass
         pass
 
 
