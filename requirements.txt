@@ -1,0 +1,9 @@
+beautifulsoup4==4.12.3
+discord.py==2.3.2
+jsonpickle==3.0.2
+Pillow==9.5.0
+Pillow==10.4.0
+pyparsing==3.1.4
+python-dotenv==1.0.1
+Requests==2.32.3
+sqids==0.4.1
