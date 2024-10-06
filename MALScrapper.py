@@ -1,11 +1,9 @@
 from os import name
-from pyparsing import Char
 import re
 import requests
 import time
 import jsonpickle
 import random
-from sqids import Sqids
 from bs4 import BeautifulSoup
 import Data
 import Data.Character

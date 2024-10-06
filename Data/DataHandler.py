@@ -5,33 +5,38 @@ jsp = jsonpickle
 class DataHandler:
     def __init__(self, base_path="Data"):
         self.base_path = base_path
-        pass
+        try:
+            open(f"{self.base_path}/Characters/data.json")
+        except ValueError:
+            raise ValueError(f"Error - Missing {self.base_path}/Characters/data.json file")
+        
+            
     def is_registered(self,id):
         if os.path.exists(f"{self.base_path}/Players/{id}.json"):
             return True
         else:
             return False
+        
     def register(self, id):
-        f = open(f"{self.base_path}/Players/{id}.json", "w")
-        f.write(jsp.encode(Data.Player(id)))
-        f.close()
+        with open(f"{self.base_path}/Players/{id}.json", "w") as f:
+            f.write(jsp.encode(Data.Player(id)))
+            
     def get_player(self,id):
-        f = open(f"{self.base_path}/Players/{id}.json")
-        player = jsp.decode(f.read())
-        f.close()
-        return player
+        return get_json(f"{self.base_path}/Players/{id}.json")
+    
     def save_player(self,player):
-        f = open(f"{self.base_path}/Players/{player.user_id}.json", "w")
-        f.write(jsp.encode(player))
-        f.close()
+        with open(f"{self.base_path}/Players/{player.user_id}.json", "w") as f:
+            f.write(jsp.encode(player))
+
     def get_characters(self):
-        f = open(f"{self.base_path}/Characters/data.json", "r")
-        characters = jsp.decode(f.read())
-        f.close()
-        return characters
+        return get_json(f"{self.base_path}/Characters/data.json")
     def save_card(self, card):
-        card.card_id
-        pass
+        with open(f"{self.base_path}/Cards/{card.card_id}.json","w") as f:
+            f.write(jsp.encode(card))
+    
+def get_json(path):
+    with open(path) as f:
+        return jsp.decode(f.read())
 
 
 
@@ -42,9 +47,7 @@ class IDGenData:
 class IDGen:
     def __init__(self):
         if os.path.exists("Data/IDGenData.json"):
-            f = open("Data/IDGenData.json","r")
-            self.data = jsp.decode(f.read())
-            f.close()
+            self.data = get_json(f"Data/IDGenData.json")
         else:
             self.data = IDGenData()
             self.update()
@@ -54,9 +57,8 @@ class IDGen:
         self.update()
         return id
     def update(self):
-        f = open("Data/IDGenData.json","w")
-        f.write(jsp.encode(self.data))
-        f.close()
+        with open("Data/IDGenData.json","w") as f:
+            f.write(jsp.encode(self.data))
     
 
 

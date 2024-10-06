@@ -7,6 +7,7 @@ from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw, ImageOps
 
 dh = Data.DataHandler.DataHandler()
+idg = Data.DataHandler.IDGen()
 STATS = ("strength","intelligence","speed","defense","magic_resistance")
 ELEMENTS = ("void","lava","ice","fairy","slime")
 
@@ -39,9 +40,10 @@ class Card:
         print(f"Character: {self.character} Series: {self.series} Stats: {self.stats} Quality: {self.quality}")
 
     def set_owner(self, player):
-
         self.owner_id = player.user_id
-        self.history.append((self.owner_id, time.time()))
+        self.history.append([self.owner_id, time.time()])
+    def claim_id(self):
+        self.card_id = idg.assign_id()
     def claim(self):
         pass
     def save(self):

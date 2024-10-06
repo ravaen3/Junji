@@ -31,6 +31,7 @@ class ClaimButton(discord.ui.Button["ClaimView"]):
         super().__init__(style=discord.ButtonStyle.green, label=str(card_index+1))
         self.card_index=card_index
         self.card=card
+        
     async def callback(self, interaction: discord.Interaction):
         player = await get_player(interaction, interaction.user.id) 
         if not player:
@@ -41,8 +42,16 @@ class ClaimButton(discord.ui.Button["ClaimView"]):
             return
         player.last_grab_time = time.time()
         self.disabled = True
-        player.claim(self.card)
+        self.set_claim(player)
         await interaction.response.send_message(f"{interaction.user.mention} claimed the {self.card.character.name} card!")
+
+    def set_claim(self, player):
+        self.card.claim_id()
+        self.card.set_owner(player)
+        player.claim(self.card)
+        player.save()
+        self.card.save()
+        
 class ClaimView(discord.ui.View):
     def __init__(self,cards):
         super().__init__()
