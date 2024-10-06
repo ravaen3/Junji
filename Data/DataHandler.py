@@ -1,6 +1,6 @@
 import jsonpickle
 import sys, os
-import Data.Player
+from Data.Player import Player as Player
 jsp = jsonpickle
 class DataHandler:
     def __init__(self, base_path="Data"):
@@ -19,11 +19,19 @@ class DataHandler:
         
     def register(self, id):
         with open(f"{self.base_path}/Players/{id}.json", "w") as f:
-            f.write(jsp.encode(Data.Player(id)))
+            f.write(jsp.encode(Player(id)))
             
     def get_player(self,id):
         return get_json(f"{self.base_path}/Players/{id}.json")
     
+    def get_card(self, card_id):
+        from Data.Card import Card as Card
+        if card := get_json(f"{self.base_path}/Cards/{card_id}.json"):
+            card : Card
+            return card
+        else:
+            return None
+
     def save_player(self,player):
         with open(f"{self.base_path}/Players/{player.user_id}.json", "w") as f:
             f.write(jsp.encode(player))
@@ -35,9 +43,11 @@ class DataHandler:
             f.write(jsp.encode(card))
     
 def get_json(path):
-    with open(path) as f:
-        return jsp.decode(f.read())
-
+    try:
+        with open(path) as f:
+            return jsp.decode(f.read())
+    except:
+        return None
 
 
 class IDGenData:
@@ -51,11 +61,13 @@ class IDGen:
         else:
             self.data = IDGenData()
             self.update()
+
     def assign_id(self):
         id =self.data.current_id
         self.data.current_id+=1
         self.update()
         return id
+    
     def update(self):
         with open("Data/IDGenData.json","w") as f:
             f.write(jsp.encode(self.data))

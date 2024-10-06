@@ -1,13 +1,13 @@
-import databaseHandler.DataHandler
-dh = databaseHandler.DataHandler.DataHandler(".")
+import Data.DataHandler
+dh = Data.DataHandler.DataHandler("Data")
 import jsonpickle
 import os
-characters = dh.getCharacters()
+characters = dh.get_characters()
 
 series_count = {}
-
+print(characters)
 for character in characters:
-    for anime in character.series:
+    for anime in characters[character].series:  
         if anime in series_count:
             series_count[anime]+=1
         else:
@@ -15,8 +15,9 @@ for character in characters:
 series_list = sorted(series_count, key= series_count.get, reverse=True)
 
 for character in characters:
-    character.series=[x for x in series_list if x in frozenset(character.series)]
-f = open("Characters\data.json", "w")
+    character.series=[x for x in series_list if x in frozenset(characters[character].series)]
+    character.series=[ characters[character].series[0]]
+f = open("Data\Characters\data.json", "w")
 f.write(jsonpickle.encode(characters))
 f.close()
 

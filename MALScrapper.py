@@ -7,7 +7,7 @@ import random
 from bs4 import BeautifulSoup
 import Data
 import Data.Character
-character_amount = 100
+character_amount = 500
 series_whitelist = [] #"https://myanimelist.net/anime/8234/Muumin"
 series_names = ["One Piece", "Dragon Ball", "Shingeki no Kyojin", "Sousou no Frieren"]
 

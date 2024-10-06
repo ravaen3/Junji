@@ -1,6 +1,4 @@
 import time
-import Data.DataHandler
-dh = Data.DataHandler.DataHandler()
 class Inventory:
     def __init__(self):
         #Cards
@@ -23,14 +21,13 @@ class Player:
         self.inventory = Inventory()
         self.wishlist = []
         self.upgrades = []
+    
 
+        self.last_command_time = 0
         self.last_grab_time = 0
         self.drops = 3
         self.last_drop_time = 0
-
-    def save(self):
-        print(self)
-        dh.save_player(self)
+        
     def claim(self, card):
         self.inventory.cards.append(card)
     def drop():

@@ -1,13 +1,11 @@
-import discord
 import random
 import time
 import requests
-import Data.DataHandler
+from Data.DataHandler import IDGen as IDGen
 from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw, ImageOps
 
-dh = Data.DataHandler.DataHandler()
-idg = Data.DataHandler.IDGen()
+idg = IDGen()
 STATS = ("strength","intelligence","speed","defense","magic_resistance")
 ELEMENTS = ("void","lava","ice","fairy","slime")
 
@@ -38,7 +36,7 @@ class Card:
 
     def print(self):
         print(f"Character: {self.character} Series: {self.series} Stats: {self.stats} Quality: {self.quality}")
-
+    
     def set_owner(self, player):
         self.owner_id = player.user_id
         self.history.append([self.owner_id, time.time()])
@@ -46,10 +44,13 @@ class Card:
         self.card_id = idg.assign_id()
     def claim(self):
         pass
-    def save(self):
-        dh.save_card(self)
     def fuse(self, card):
         pass
+    def get_embed(self):
+        embed_value = ""
+        for stat in STATS:
+            embed_value += f" {stat.capitalize()}:  {self.stats[stat]} \n"
+        return embed_value
     def image(self):
         character = self.character
         color = "white"
@@ -74,9 +75,9 @@ class Card:
         img.paste(borderc, (0,0),BORDER.convert("RGBA"))
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 30)
-        draw.text((20, 515),f"{character.name}",(0,0,0), font=font)
+        draw.text((20, 515),f"{character.name[:16]}",(0,0,0), font=font)
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 20)
-        draw.text((20, 550),f"{character.series[0]}",(0,0,0), font=font)
+        draw.text((20, 550),f"{character.series[0][:20]}",(0,0,0), font=font)
         font = ImageFont.truetype("CardArt\Assets\Fonts\Play-Bold.ttf", 30)
         draw.text((260, 540),f"{round(self.quality*100,1)}%",(0,0,0), font=font)
         return img
